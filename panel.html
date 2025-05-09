@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Panel PsicoGames</title>
+  <link rel="stylesheet" href="estilos.css" />
+  <style>
+    body { font-family: sans-serif; background-color: #f4f4f4; padding: 20px; }
+    header { display: flex; justify-content: space-between; align-items: center; }
+    button { margin-left: 10px; }
+    .juego { border: 1px solid #ccc; padding: 10px; margin: 10px 0; background: #fff; }
+    .admin-tools, .edit-tools, .view-tools { margin-top: 20px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Panel de Control - PsicoGames</h1>
+    <div>
+      <span id="userDisplay"></span>
+      <button onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="contenido-juegos">
+      <h2>📋 Lista de Juegos</h2>
+      <div id="lista-juegos"></div>
+    </section>
+    <section id="admin-panel" class="admin-tools hidden">
+      <h2>⚙️ Herramientas del Administrador</h2>
+      <button onclick="mostrarFormularioAgregar()">➕ Agregar Juego</button>
+      <div id="formulario-agregar" class="hidden">
+        <h3>Nuevo Juego</h3>
+        <input type="text" id="nuevoTitulo" placeholder="Título del juego" /><br />
+        <input type="text" id="nuevoLink" placeholder="URL del juego" /><br />
+        <input type="text" id="nuevoImagen" placeholder="URL de imagen" /><br />
+        <select id="nuevoCategoria">
+          <option value="pequeños">Niños Pequeños</option>
+          <option value="grandes">Niños Grandes</option>
+        </select><br />
+        <button onclick="agregarJuego()">Guardar</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="../main.js"></script>
+  <script>
+    const usuario = localStorage.getItem('usuario');
+    document.getElementById('userDisplay').textContent = `Sesión iniciada como: ${usuario}`;
+
+    const juegosPequenos = [
+  { titulo: "Cokitos", link: "https://www.cokitos.com/", imagen: "cokitos.png", categoria: "pequeños" },
+  { titulo: "Vedoque", link: "https://www.vedoque.com/", imagen: "vedoque.png", categoria: "pequeños" },
+  { titulo: "Pipo Club", link: "https://www.pipoclub.com/", imagen: "pipoclub.png", categoria: "pequeños" },
+  { titulo: "Mundo Primaria", link: "https://www.mundoprimaria.com/juegos-educativos", imagen: "mundoprimaria.png", categoria: "pequeños" },
+  { titulo: "EducaPeques", link: "https://www.educapeques.com/juegos-educativos", imagen: "educapeques.png", categoria: "pequeños" },
+  { titulo: "Childtopia", link: "https://www.childtopia.com/index.php?idioma=es", imagen: "childtopia.png", categoria: "pequeños" },
+  { titulo: "Cerebriti", link: "https://www.cerebriti.com/juegos-de-ninos", imagen: "cerebriti.png", categoria: "pequeños" },
+  { titulo: "Digipuzzle", link: "https://www.digipuzzle.net/espana/", imagen: "digipuzzle.png", categoria: "pequeños" },
+  { titulo: "Pipo Games Clásico", link: "http://www.pipoclub.com/juegos.htm", imagen: "pipo_classic.png", categoria: "pequeños" },
+  { titulo: "Smile and Learn", link: "https://www.smileandlearn.com/", imagen: "smileandlearn.png", categoria: "pequeños" },
+  { titulo: "Arbol ABC", link: "https://www.arbolabc.com/", imagen: "arbolabc.png", categoria: "pequeños" },
+  { titulo: "El Búho Boo", link: "https://elbuhoobo.com/", imagen: "buho.png", categoria: "pequeños" }
+];
+
+
+    const juegosGrandes = [
+      { titulo: "Kahoot", link: "https://www.kahoot.com/", imagen: "kahoot.png", categoria: "grandes" },
+      { titulo: "National Geographic", link: "https://www.nationalgeographic.com/games/", imagen: "national geographic.jpg", categoria: "grandes" },
+      { titulo: "Code.org", link: "https://www.code.org/", imagen: "code.org.jpeg", categoria: "grandes" },
+      { titulo: "Ajedrez (Chess.com)", link: "https://www.chess.com/play/computer", imagen: "chesscom.png", categoria: "grandes" },
+      { titulo: "Roblox", link: "https://www.roblox.com", imagen: "roblox.png", categoria: "grandes" },
+      { titulo: "Miniclip", link: "https://www.miniclip.com/games/en/", imagen: "miniclip.jpg", categoria: "grandes" },
+      { titulo: "Fortnite", link: "https://www.fortnite.com/", imagen: "fortnite.png", categoria: "grandes" }
+    ];
+
+    let juegos = [...juegosPequenos, ...juegosGrandes];
+
+    function renderJuegos() {
+      const contenedor = document.getElementById("lista-juegos");
+      contenedor.innerHTML = "";
+      juegos.forEach((juego, index) => {
+        const div = document.createElement("div");
+        div.className = "juego";
+        div.innerHTML = `
+          <h3>${juego.titulo}</h3>
+          <img src="../recursos/${juego.imagen}" alt="${juego.titulo}" width="100"><br/>
+          <a href="${juego.link}" target="_blank">🔗 Jugar</a><br/>
+          <p>Categoría: ${juego.categoria}</p>
+          ${usuario === 'admin' || usuario === 'sebastian.pasachoa' ? `
+            <button onclick="editarJuego(${index})">✏️ Editar</button>
+          ` : ''}
+        `;
+        contenedor.appendChild(div);
+      });
+    }
+
+    function editarJuego(index) {
+      const juego = juegos[index];
+      const nuevoTitulo = prompt("Nuevo título:", juego.titulo);
+      const nuevoLink = prompt("Nuevo enlace:", juego.link);
+      const nuevaImagen = prompt("Nueva imagen:", juego.imagen);
+      if (nuevoTitulo && nuevoLink && nuevaImagen) {
+        juegos[index] = { ...juego, titulo: nuevoTitulo, link: nuevoLink, imagen: nuevaImagen };
+        renderJuegos();
+      }
+    }
+
+    function mostrarFormularioAgregar() {
+      document.getElementById("formulario-agregar").classList.toggle("hidden");
+    }
+
+    function agregarJuego() {
+      const titulo = document.getElementById("nuevoTitulo").value;
+      const link = document.getElementById("nuevoLink").value;
+      const imagen = document.getElementById("nuevoImagen").value;
+      const categoria = document.getElementById("nuevoCategoria").value;
+      if (titulo && link && imagen) {
+        juegos.push({ titulo, link, imagen, categoria });
+        renderJuegos();
+        mostrarFormularioAgregar();
+      } else {
+        alert("Por favor, completa todos los campos.");
+      }
+    }
+
+    function cerrarSesion() {
+      localStorage.removeItem('usuario');
+      window.location.href = '../index.html';
+    }
+
+    if (usuario === 'admin') {
+      document.getElementById('admin-panel').classList.remove('hidden');
+    }
+    
+    renderJuegos();
+  </script>
+</body>
+</html>
